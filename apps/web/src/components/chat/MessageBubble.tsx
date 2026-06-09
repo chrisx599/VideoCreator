@@ -111,18 +111,35 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
             <div className="text-xs text-gray-600 mb-2">
               Detected {message.generatedFiles.length} generated files:
             </div>
-            <div className="space-y-1 mb-3">
+            <div className="space-y-3 mb-3">
               {message.generatedFiles.map((file, index) => {
-                console.log('DEBUG: Rendering file:', file);
-                console.log('DEBUG: File name:', file.name);
-                console.log('DEBUG: File path:', file.path);
+                const fileUrl = `/api/files/read?path=${encodeURIComponent(file.path)}`;
                 return (
-                  <div key={index} className="text-xs text-gray-500 flex items-center">
-                    <span className="inline-block w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-                    <span className="font-mono">{file.path}</span>
-                    <span className="ml-2 px-1 py-0.5 bg-gray-100 rounded text-xs">
-                      {file.type}
-                    </span>
+                  <div key={index} className="space-y-1">
+                    {file.type === 'image' && (
+                      <img
+                        src={fileUrl}
+                        alt={file.name}
+                        className="max-w-full max-h-80 rounded border border-gray-200"
+                      />
+                    )}
+                    {file.type === 'video' && (
+                      <video
+                        src={fileUrl}
+                        controls
+                        className="max-w-full max-h-80 rounded border border-gray-200"
+                      />
+                    )}
+                    {file.type === 'audio' && (
+                      <audio src={fileUrl} controls className="w-full" />
+                    )}
+                    <div className="text-xs text-gray-500 flex items-center">
+                      <span className="inline-block w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                      <span className="font-mono break-all">{file.path}</span>
+                      <span className="ml-2 px-1 py-0.5 bg-gray-100 rounded text-xs shrink-0">
+                        {file.type}
+                      </span>
+                    </div>
                   </div>
                 );
               })}

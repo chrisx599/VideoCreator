@@ -29,13 +29,13 @@ export function Onboarding() {
   const getStepTitle = () => {
     switch (step) {
       case 0:
-        return "Welcome to UniVA Beta! 🎉";
+        return "Welcome to VideoCreator Beta! 🎉";
       case 1:
         return "⚠️ This is a super early beta!";
       case 2:
         return "🦋 Have fun testing!";
       default:
-        return "UniVA Onboarding";
+        return "VideoCreator Onboarding";
     }
   };
 
@@ -45,8 +45,8 @@ export function Onboarding() {
         return (
           <div className="space-y-5">
             <div className="space-y-3">
-              <Title title="Welcome to UniVA Beta! 🎉" />
-              <Description description="You're among the first to try UniVA - the fully open source Universal Video Agent." />
+              <Title title="Welcome to VideoCreator Beta! 🎉" />
+              <Description description="You're among the first to try VideoCreator - the fully open source Universal Video Agent." />
             </div>
             <NextButton onClick={handleNext}>Next</NextButton>
           </div>
@@ -56,8 +56,8 @@ export function Onboarding() {
           <div className="space-y-5">
             <div className="space-y-3">
               <Title title={getStepTitle()} />
-              <Description description="UniVA still a ton of things to do to update this agent amazing." />
-              <Description description="If you're curious, check out our Homepage [here](https://univa.online)" />
+              <Description description="VideoCreator still a ton of things to do to update this agent amazing." />
+              <Description description="If you're curious, check out our Homepage [here](https://videocreator.online)" />
             </div>
             <NextButton onClick={handleNext}>Next</NextButton>
           </div>
@@ -67,7 +67,7 @@ export function Onboarding() {
           <div className="space-y-5">
             <div className="space-y-3">
               <Title title={getStepTitle()} />
-              <Description description="Join our [Discord](https://discord.gg/85GkGW897V), chat with cool people and share feedback to help make UniVA the best editor ever." />
+              <Description description="Join our [Discord](https://discord.gg/85GkGW897V), chat with cool people and share feedback to help make VideoCreator the best editor ever." />
             </div>
             <NextButton onClick={handleClose}>Finish</NextButton>
           </div>

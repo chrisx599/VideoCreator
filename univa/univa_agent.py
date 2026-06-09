@@ -136,6 +136,18 @@ def _safe_json(val: Any) -> str:
         return str(val)
 
 
+def _coerce_tool_result(result: Any) -> Any:
+    """Convert pydantic tool results to plain dicts so LangChain serializes the
+    ToolMessage content as real JSON (preserving structured fields like
+    output_path) instead of falling back to an unparseable str() repr."""
+    if hasattr(result, "model_dump"):
+        try:
+            return result.model_dump()
+        except Exception:
+            return result
+    return result
+
+
 def _normalize_tool_content(val: Any) -> Optional[Dict[str, Any]]:
     if val is None:
         return None
@@ -172,8 +184,16 @@ def _summarize_tool_result(payload: Dict[str, Any]) -> Dict[str, Any]:
     summary = {k: payload.get(k) for k in keys if payload.get(k) is not None}
     if summary:
         return summary
-    if "content" in payload and isinstance(payload["content"], dict):
-        return _summarize_tool_result(payload["content"])
+    content = payload.get("content")
+    if isinstance(content, dict):
+        return _summarize_tool_result(content)
+    if isinstance(content, str):
+        try:
+            parsed = json.loads(content)
+            if isinstance(parsed, dict):
+                return _summarize_tool_result(parsed)
+        except Exception:
+            pass
     return payload
 
 
@@ -281,24 +301,9 @@ class ReActAgent:
                     kwargs["project_id"] = pid
             return kwargs
 
-        if not needs_inject:
-            if inspect.iscoroutinefunction(func):
-                return StructuredTool.from_function(
-                    coroutine=func,
-                    name=func.__name__,
-                    description=description or func.__name__,
-                    parse_docstring=False,
-                )
-            return StructuredTool.from_function(
-                func=func,
-                name=func.__name__,
-                description=description or func.__name__,
-                parse_docstring=False,
-            )
-
         if inspect.iscoroutinefunction(func):
             async def _wrapped_async(**kwargs: Any):
-                return await func(**_inject_project_id(kwargs))
+                return _coerce_tool_result(await func(**_inject_project_id(kwargs)))
             if sig is not None:
                 _wrapped_async.__signature__ = sig  # type: ignore[attr-defined]
             _wrapped_async.__annotations__ = getattr(func, "__annotations__", {})
@@ -311,7 +316,7 @@ class ReActAgent:
             )
 
         def _wrapped_sync(**kwargs: Any):
-            return func(**_inject_project_id(kwargs))
+            return _coerce_tool_result(func(**_inject_project_id(kwargs)))
         if sig is not None:
             _wrapped_sync.__signature__ = sig  # type: ignore[attr-defined]
         _wrapped_sync.__annotations__ = getattr(func, "__annotations__", {})

@@ -36,15 +36,15 @@ export function Footer() {
           {/* Brand Section */}
           <div className="md:col-span-1 max-w-sm">
             <div className="flex justify-start items-center gap-2 mb-4">
-              <Image src="/favicon.png" alt="UniVA" width={24} height={24} />
-              <span className="font-bold text-lg">UniVA</span>
+              <Image src="/favicon.png" alt="VideoCreator" width={24} height={24} />
+              <span className="font-bold text-lg">VideoCreator</span>
             </div>
             <p className="text-sm md:text-left text-muted-foreground mb-5">
               An all-in-one video creation platform that meets all your video production needs in one stop.
             </p>
             <div className="flex justify-start gap-3">
               <Link
-                href="https://github.com/univa-agent"
+                href="https://github.com/videocreator-agent"
                 className="text-muted-foreground hover:text-foreground transition-colors"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -68,7 +68,7 @@ export function Footer() {
               <ul className="space-y-2 text-sm">
                 <li>
                   <Link
-                    href="https://github.com/univa-agent"
+                    href="https://github.com/videocreator-agent"
                     className="text-muted-foreground hover:text-foreground transition-colors"
                   >
                     Code
@@ -76,7 +76,7 @@ export function Footer() {
                 </li>
                 <li>
                   <Link
-                    href="https://huggingface.co/datasets/chr1ce/UniVA-Bench"
+                    href="https://huggingface.co/datasets/chr1ce/VideoCreator-Bench"
                     className="text-muted-foreground hover:text-foreground transition-colors"
                   >
                     Benchmark
@@ -105,7 +105,7 @@ export function Footer() {
         {/* Bottom Section */}
         <div className="pt-2 flex flex-col md:flex-row justify-between items-start gap-4">
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <span>© 2025 UniVA, All Rights Reserved</span>
+            <span>© 2025 VideoCreator, All Rights Reserved</span>
           </div>
         </div>
       </div>

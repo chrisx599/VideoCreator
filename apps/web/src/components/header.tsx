@@ -9,20 +9,20 @@ import Image from "next/image";
 export function Header() {
   const leftContent = (
     <Link href="/" className="flex items-center gap-3">
-      <Image src="/favicon.png" alt="UniVA Logo" width={32} height={32} />
-      <span className="text-xl font-medium hidden md:block">UniVA</span>
+      <Image src="/favicon.png" alt="VideoCreator Logo" width={32} height={32} />
+      <span className="text-xl font-medium hidden md:block">VideoCreator</span>
     </Link>
   );
 
   const rightContent = (
     <nav className="flex items-center gap-1">
       <div className="flex items-center gap-4">
-        <Link href="https://univa.online/">
+        <Link href="https://videocreator.online/">
           <Button variant="text" className="text-sm p-0">
             Homepage
           </Button>
         </Link>
-        <Link href="https://univa.online/asserts/pdf/UniVA_ICLR2025_v5.pdf">
+        <Link href="https://videocreator.online/asserts/pdf/VideoCreator_ICLR2025_v5.pdf">
           <Button variant="text" className="text-sm p-0">
             Paper
           </Button>
@@ -32,7 +32,7 @@ export function Header() {
             Community
           </Button>
         </Link>
-        <Link href="https://github.com/univa-agent">
+        <Link href="https://github.com/videocreator-agent">
         <Button variant="text" className="text-sm p-0">
             Code
           </Button>

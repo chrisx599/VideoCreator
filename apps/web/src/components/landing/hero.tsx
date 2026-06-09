@@ -33,9 +33,9 @@ export function Hero() {
           className="mb-4 flex justify-center"
         >
           <SponsorButton
-            href="https://univa.online"
+            href="https://videocreator.online"
             logo={VercelIcon}
-            companyName="UniVATeam"
+            companyName="VideoCreatorTeam"
           />
         </motion.div>
         <motion.div

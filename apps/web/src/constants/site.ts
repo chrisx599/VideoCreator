@@ -1,7 +1,7 @@
-export const SITE_URL = "https://univa.online";
+export const SITE_URL = "https://videocreator.online";
 
 export const SITE_INFO = {
-  title: "UniVA",
+  title: "VideoCreator",
   description:
     "A Universal Video Agent to meet all your video creation needs.",
   url: SITE_URL,

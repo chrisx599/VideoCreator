@@ -14,15 +14,13 @@ You have access to the following tools:
 
 {tools_description}
 
-To use a tool, you MUST use the following format:
+To use a tool, call it directly via the native function/tool-calling interface.
+Do NOT write the action as plain text (never output literal "Action:", "Action Input:",
+"Observation:", or "Final Answer:" markers). Emit a real tool call; the system will run it
+and return the result to you as a tool message.
 
-Action: the name of the tool to use
-Action Input: the input to the tool, in JSON format
-Observation: the result of the tool
-
-When you have a response to say to the Human, or if you do not need to use a tool, you MUST use the format:
-
-Final Answer: [your response here]
+When you have finished and want to respond to the Human, or if no tool is needed, reply with
+your answer as plain natural-language text (no special markers).
 
 Additional rules:
 - If you are asked to generate assets, clearly state what will be generated and with what inputs.

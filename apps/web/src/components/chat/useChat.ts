@@ -108,6 +108,9 @@ export const useChat = () => {
     // Create task execution flow state
     let currentTodoItems: TodoItem[] = [];
     let currentOverallDescription = '';
+    // Id of the assistant message currently accumulating streamed `content` tokens.
+    // Reset whenever any non-content event arrives so each text block is one bubble.
+    let streamingMessageId: string | null = null;
     
     // Counter for generating unique IDs
     let messageIdCounter = 0;
@@ -177,7 +180,20 @@ export const useChat = () => {
             }
 
             const data = JSON.parse(event.data);
-            
+
+            // Any non-content event ends the current streamed text block, so the
+            // next `content` token starts a fresh bubble instead of appending.
+            if (data.type !== 'content' && data.type !== 'heartbeat' && streamingMessageId) {
+              const finishedId = streamingMessageId;
+              streamingMessageId = null;
+              setState(prev => ({
+                ...prev,
+                messages: prev.messages.map(m =>
+                  m.id === finishedId ? { ...m, isStreaming: false } : m
+                ),
+              }));
+            }
+
             // Handle heartbeat message
             if (data.type === 'heartbeat') {
               console.log('Heartbeat received');
@@ -191,23 +207,37 @@ export const useChat = () => {
             }
             
             if (data.type === 'content') {
-                const progressMessage: Message = {
-                  id: generateUniqueId(),
-                  role: 'assistant',
-                  content: data.content,
-                  timestamp: new Date().toISOString(),
-                  messageType: 'assistant',
-                };
-                
-                setState(prev => ({
-                  ...prev,
-                  messages: [...prev.messages, progressMessage],
-                }));
+                if (streamingMessageId === null) {
+                  // Start a new streamed assistant bubble.
+                  const newId = generateUniqueId();
+                  streamingMessageId = newId;
+                  const progressMessage: Message = {
+                    id: newId,
+                    role: 'assistant',
+                    content: data.content,
+                    timestamp: new Date().toISOString(),
+                    messageType: 'assistant',
+                    isStreaming: true,
+                  };
+                  setState(prev => ({
+                    ...prev,
+                    messages: [...prev.messages, progressMessage],
+                  }));
+                } else {
+                  // Append this token to the existing streamed bubble.
+                  const activeId = streamingMessageId;
+                  setState(prev => ({
+                    ...prev,
+                    messages: prev.messages.map(m =>
+                      m.id === activeId ? { ...m, content: m.content + data.content } : m
+                    ),
+                  }));
+                }
             } else if (data.type === 'tool_start') {
               const toolStartMessage: Message = {
                 id: generateUniqueId(),
                 role: 'assistant',
-                content: `Executing tool: ${data.tool}. Please don't close this window.`,
+                content: `Executing tool: ${data.name}. Please don't close this window.`,
                 timestamp: new Date().toISOString(),
                 messageType: 'tool_start',
               };
@@ -217,13 +247,13 @@ export const useChat = () => {
                 messages: [...prev.messages, toolStartMessage],
               }));
             } else if (data.type === 'tool_end') {
-              const toolResult = data.result;
+              const toolResult = data.output;
               let resultSummary = 'Tool execution completed';
               let toolEndContent = '';
               let generatedFiles: GeneratedFile[] = [];
-              
+
               if (toolResult && typeof toolResult === 'object') {
-                if (toolResult.success === 'True') {
+                if (toolResult.success === true || toolResult.success === 'True') {
                   resultSummary = 'Tool execution successful';
                 } else {
                   resultSummary = 'Tool execution failed';

@@ -10,7 +10,7 @@ export default function ChatPage() {
             <div>
               <h1 className="text-3xl font-bold text-gray-900">AI Chat</h1>
               <p className="mt-1 text-sm text-gray-500">
-                Chat with our AI assistant powered by univa
+                Chat with our AI assistant powered by VideoCreator
               </p>
             </div>
           </div>
