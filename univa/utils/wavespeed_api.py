@@ -272,10 +272,19 @@ def image_to_video_generate(api_key, prompt, image, save_path: str = None, model
     with open(image, "rb") as f:
         img_bytes = f.read()
     b64 = base64.b64encode(img_bytes).decode("utf-8")
+    ext = os.path.splitext(image)[1].lower()
+    mime = {
+        ".png": "image/png",
+        ".webp": "image/webp",
+        ".bmp": "image/bmp",
+        ".gif": "image/gif",
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+    }.get(ext, "image/jpeg")
     seed = int(datetime.now().timestamp())
     payload = {
         "duration": duration,
-        "image": f"data:image/jpeg;base64,{b64}",
+        "image": f"data:{mime};base64,{b64}",
         "prompt": prompt,
         "seed": seed
     }

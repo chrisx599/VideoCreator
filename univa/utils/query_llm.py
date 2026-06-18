@@ -1,4 +1,5 @@
 import os
+import time
 import requests
 from decord import VideoReader, cpu
 import base64
@@ -364,49 +365,60 @@ def query_openai(
     messages: list[dict],
     max_completion_tokens: int = 1024,
     temperature: float = 1.0,
-    base_url: str = "https://api.openai.com/v1"
+    base_url: str = "https://api.openai.com/v1",
+    max_retries: int = 3
 ) -> dict:
     url = f"{base_url}/chat/completions"
-    
+
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {api_key}"
     }
-    
+
     payload = {
         "model": model,
         "messages": messages,
         "max_completion_tokens": max_completion_tokens,
         "temperature": temperature
     }
-    
-    try:
-        resp = requests.post(url, headers=headers, json=payload)
-        resp.raise_for_status()
-        
-        data = resp.json()
-        
-        if "choices" in data and len(data["choices"]) > 0:
-            return {
-                "content": data["choices"][0]["message"]["content"],
-                "response": data,
-                "usage": data.get("usage", {}),
-                "model": data.get("model", model)
-            }
-        else:
-            raise ValueError("Invalid response format from OpenAI")
-            
-    except requests.exceptions.RequestException as e:
-        if hasattr(e, 'response') and e.response is not None:
-            error_detail = e.response.text
-            try:
-                error_data = json.loads(error_detail)
-                raise Exception(f"OpenAI error: {error_data}")
-            except json.JSONDecodeError:
-                raise Exception(f"HTTP error: {e.response.status_code}, {error_detail}")
-        raise
-    except Exception as e:
-        raise Exception(f"Error occurred during OpenAI call: {str(e)}")
+
+    last_conn_error = None
+    for attempt in range(max_retries):
+        try:
+            resp = requests.post(url, headers=headers, json=payload, timeout=180)
+            resp.raise_for_status()
+
+            data = resp.json()
+
+            if "choices" in data and len(data["choices"]) > 0:
+                return {
+                    "content": data["choices"][0]["message"]["content"],
+                    "response": data,
+                    "usage": data.get("usage", {}),
+                    "model": data.get("model", model)
+                }
+            else:
+                raise ValueError("Invalid response format from OpenAI")
+
+        except requests.exceptions.RequestException as e:
+            # An HTTP error response (4xx/5xx) is a definitive answer from the
+            # server — surface it immediately without retrying.
+            if hasattr(e, 'response') and e.response is not None:
+                error_detail = e.response.text
+                try:
+                    error_data = json.loads(error_detail)
+                    raise Exception(f"OpenAI error: {error_data}")
+                except json.JSONDecodeError:
+                    raise Exception(f"HTTP error: {e.response.status_code}, {error_detail}")
+            # Otherwise this is a transient connection/TLS error (e.g. SSL bad
+            # record mac, timeout, reset) — retry with backoff before giving up.
+            last_conn_error = e
+            if attempt < max_retries - 1:
+                time.sleep(2 * (attempt + 1))
+                continue
+            raise Exception(f"Connection error after {max_retries} attempts: {str(e)}")
+        except Exception as e:
+            raise Exception(f"Error occurred during OpenAI call: {str(e)}")
 
 
 
@@ -474,7 +486,7 @@ def speech_prompt_gen(video_path: str) -> str:
     return speech_text
 
 
-def multimodal_query(prompt: str, image_path: str=None , video_path: str=None, video_frames_to_extract: int=256):
+def multimodal_query(prompt: str, image_path: str=None , video_path: str=None, video_frames_to_extract: int=32):
     multimodal_messages = prepare_multimodal_messages_openai_format(
                             prompt_text=prompt,
                             image_paths=[image_path] if image_path else None,

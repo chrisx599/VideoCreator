@@ -1,12 +1,47 @@
 from __future__ import annotations
 
+import functools
+import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 from .service import ProjectMemoryService, init_project_memory
 
 
+logger = logging.getLogger(__name__)
+
 _services: Dict[str, ProjectMemoryService] = {}
+
+
+def _tool_envelope(func: Callable[..., Any]) -> Callable[..., Any]:
+    """Give every memory tool a consistent result shape.
+
+    The frontend (and the agent's tool-result summarizer) keys off a ``success``
+    field. Memory tools historically returned bare dicts with no such field, so
+    successful calls were displayed as "Tool execution failed". This wrapper:
+      - adds ``success: True`` to successful dict results (without clobbering an
+        explicit value), and
+      - converts exceptions (e.g. a FOREIGN KEY violation when a segment_id does
+        not exist) into ``{"success": False, "error": ...}`` so the failure is
+        reported clearly to both the user and the agent instead of crashing the
+        tool call with an opaque traceback.
+
+    ``functools.wraps`` preserves ``__name__``/``__doc__``/``__signature__`` so the
+    agent's reflection-based tool wiring keeps working unchanged.
+    """
+
+    @functools.wraps(func)
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
+        try:
+            result = func(*args, **kwargs)
+        except Exception as exc:  # surface a structured, actionable error
+            logger.warning("memory tool %s failed: %s", func.__name__, exc)
+            return {"success": False, "error": str(exc), "tool": func.__name__}
+        if isinstance(result, dict):
+            result.setdefault("success", True)
+        return result
+
+    return wrapper
 
 
 def _svc(project_id: str) -> ProjectMemoryService:
@@ -381,8 +416,11 @@ def memory_backfill_asset_index(project_id: str) -> Dict[str, Any]:
 def get_memory_tools() -> List[Any]:
     """
     Convenience for agent wiring: return a list of callables exposed as tools.
+
+    Each callable is wrapped so it returns a consistent ``success``-bearing
+    envelope (see ``_tool_envelope``).
     """
-    return [
+    funcs = [
         memory_init_project,
         memory_upsert_segment,
         memory_get_segment,
@@ -413,3 +451,4 @@ def get_memory_tools() -> List[Any]:
         memory_get_context_window,
         memory_backfill_asset_index,
     ]
+    return [_tool_envelope(f) for f in funcs]

@@ -242,8 +242,8 @@ export default function ProjectsPage() {
         </div>
 
         {isSelectionMode && sortedProjects.length > 0 && (
-          <button
-            type="button"
+          <div
+            role="button"
             onClick={() => handleSelectAll(!allSelected)}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
@@ -261,7 +261,7 @@ export default function ProjectsPage() {
             <span className="text-sm text-muted-foreground">
               ({selectedProjects.size} of {sortedProjects.length} selected)
             </span>
-          </button>
+          </div>
         )}
 
         {isLoading || !isInitialized ? (

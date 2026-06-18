@@ -266,13 +266,15 @@ export const useChat = () => {
                 }
                 
                 // Get file path from output_path, supports single file or file array
-                if (toolResult.output_path && toolResult.output_path.trim()) {
+                if (toolResult.output_path) {
                   const outputPaths = Array.isArray(toolResult.output_path)
                     ? toolResult.output_path
                     : [toolResult.output_path];
-                  
-                  // Filter out empty strings
-                  const validPaths = outputPaths.filter((path: string) => path && path.trim());
+
+                  // Filter out empty strings (and guard against non-string entries)
+                  const validPaths = outputPaths.filter(
+                    (path: unknown): path is string => typeof path === 'string' && path.trim() !== ''
+                  );
                   
                   validPaths.forEach((filePath: string) => {
                     const fileName = filePath.split('/').pop() || filePath;

@@ -348,6 +348,11 @@ class ProjectMemoryStore:
     ) -> Dict[str, Any]:
         from uuid import uuid4
 
+        if self.get_segment(segment_id) is None:
+            raise ValueError(
+                f"segment_id '{segment_id}' does not exist in project '{self.project_id}'. "
+                "Create the segment first with memory_upsert_segment, then save the clip take."
+            )
         cur = self.conn.execute("SELECT COALESCE(MAX(take_index), -1) AS mx FROM clips WHERE segment_id=?", (segment_id,))
         take_index = int(cur.fetchone()["mx"]) + 1
         cid = clip_id or str(uuid4())
@@ -463,6 +468,11 @@ class ProjectMemoryStore:
     def add_beat(self, segment_id: str, beat_type: str, summary: str = "", payload: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         from uuid import uuid4
 
+        if self.get_segment(segment_id) is None:
+            raise ValueError(
+                f"segment_id '{segment_id}' does not exist in project '{self.project_id}'. "
+                "Create the segment first with memory_upsert_segment, then attach the beat."
+            )
         bid = str(uuid4())
         ts = self._now()
         self.conn.execute(

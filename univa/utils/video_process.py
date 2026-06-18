@@ -264,7 +264,7 @@ def save_last_frame_decord(video_path, output_path=None):
 
         try:
             vr = VideoReader(video_path, ctx=cpu(0))
-            
+
             total_frames = len(vr)
             if total_frames == 0:
                 raise ValueError("can not detect frame from video")
@@ -288,6 +288,43 @@ def save_last_frame_decord(video_path, output_path=None):
             img = Image.fromarray(last_frame)
             img.save(output_path, format='PNG', compress_level=0)
             print(f"save the last frame to: {output_path}")
+            return output_path
+        except IOError as e:
+            raise RuntimeError(f"failed to save frame: {str(e)}")
+
+
+def save_first_frame_decord(video_path, output_path=None):
+    rank = int(os.getenv("RANK", 0))
+    if rank == 0:
+        if not os.path.isfile(video_path):
+            raise FileNotFoundError(f"video file is not exist: {video_path}")
+
+        try:
+            vr = VideoReader(video_path, ctx=cpu(0))
+
+            total_frames = len(vr)
+            if total_frames == 0:
+                raise ValueError("can not detect frame from video")
+
+            first_frame = vr[0].asnumpy()  # uint8 (H, W, 3)
+
+        except DECORDError as e:
+            raise RuntimeError(f"video decoded fail: {str(e)}")
+        except IndexError:
+            raise RuntimeError("index error")
+        finally:
+            if 'vr' in locals():
+                del vr
+
+        if output_path is None:
+            dir_name = os.path.dirname(video_path)
+            file_name = os.path.splitext(os.path.basename(video_path))[0]
+            output_path = os.path.join(dir_name, f"{file_name}_first_frame.png")
+
+        try:
+            img = Image.fromarray(first_frame)
+            img.save(output_path, format='PNG', compress_level=0)
+            print(f"save the first frame to: {output_path}")
             return output_path
         except IOError as e:
             raise RuntimeError(f"failed to save frame: {str(e)}")

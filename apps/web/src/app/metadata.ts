@@ -37,10 +37,9 @@ export const baseMetaData: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/favicon.ico" },
-      { url: "/favicon.png", sizes: "16x16", type: "image/png" },
-      { url: "/favicon.png", sizes: "32x32", type: "image/png" },
-      { url: "/favicon.png", sizes: "96x96", type: "image/png" },
+      { url: "/favv.png", sizes: "16x16", type: "image/png" },
+      { url: "/favv.png", sizes: "32x32", type: "image/png" },
+      { url: "/favv.png", sizes: "96x96", type: "image/png" },
     ],
     apple: [
       { url: "/icons/apple-icon-57x57.png", sizes: "57x57", type: "image/png" },
@@ -73,7 +72,7 @@ export const baseMetaData: Metadata = {
         type: "image/png",
       },
     ],
-    shortcut: ["/favicon.ico"],
+    shortcut: ["/favv.png"],
   },
   appleWebApp: {
     capable: true,

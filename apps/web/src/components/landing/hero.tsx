@@ -44,8 +44,8 @@ export function Hero() {
           transition={{ delay: 0.2, duration: 0.8 }}
           className="inline-block font-bold tracking-tighter text-4xl md:text-[4rem]"
         >
-          <h1>Towards Next-Generation Video Intelligence</h1>
-          <Handlebars>Universal Video Agents</Handlebars>
+          <h1>An Agentic System for</h1>
+          <Handlebars>Multi-turn Video Production</Handlebars>
         </motion.div>
 
         <motion.p
@@ -54,8 +54,8 @@ export function Hero() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4, duration: 0.8 }}
         >
-          An agentic framework that achieves Breadth by unifying a vast suite of video tools on a single platform, 
-          and Depth through its core innovation of "Agentic Synergy."
+          VideoCreator leverages understanding capabilities to perform finegrained analysis of newly produced content and uses persistent memory
+          to retain and reuse prior context across turns, enabling continuous multi-round creation with consistency throughout the project.
         </motion.p>
 
         <motion.div

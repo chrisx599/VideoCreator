@@ -40,24 +40,16 @@ export function Footer() {
               <span className="font-bold text-lg">VideoCreator</span>
             </div>
             <p className="text-sm md:text-left text-muted-foreground mb-5">
-              An all-in-one video creation platform that meets all your video production needs in one stop.
+              An Agentic System for Multi-turn Video Production.
             </p>
             <div className="flex justify-start gap-3">
               <Link
-                href="https://github.com/videocreator-agent"
+                href="https://github.com/chrisx599/VideoCreator"
                 className="text-muted-foreground hover:text-foreground transition-colors"
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 <FaGithub className="h-5 w-5" />
-              </Link>
-              <Link
-                href="https://discord.gg/85GkGW897V"
-                className="text-muted-foreground hover:text-foreground transition-colors"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <RiDiscordFill className="h-5 w-5" />
               </Link>
             </div>
           </div>
@@ -68,37 +60,15 @@ export function Footer() {
               <ul className="space-y-2 text-sm">
                 <li>
                   <Link
-                    href="https://github.com/videocreator-agent"
+                    href="https://github.com/chrisx599/VideoCreator"
                     className="text-muted-foreground hover:text-foreground transition-colors"
                   >
                     Code
                   </Link>
                 </li>
-                <li>
-                  <Link
-                    href="https://huggingface.co/datasets/chr1ce/VideoCreator-Bench"
-                    className="text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    Benchmark
-                  </Link>
-                </li>
               </ul>
             </div>
 
-            {/* Company Links */}
-            <div>
-              <h3 className="font-semibold text-foreground mb-4">Communication</h3>
-              <ul className="space-y-2 text-sm">
-                <li>
-                  <Link
-                    href="https://discord.gg/85GkGW897V"
-                    className="text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    Community
-                  </Link>
-                </li>
-              </ul>
-            </div>
           </div>
         </div>
 

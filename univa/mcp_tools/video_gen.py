@@ -8,7 +8,7 @@ from datetime import datetime
 from pathlib import Path
 
 from univa.mcp_tools.base import ToolResponse, setup_logger
-from univa.utils.video_process import merge_videos, storyboard_generate, save_last_frame_decord
+from univa.utils.video_process import merge_videos, storyboard_generate, save_last_frame_decord, save_first_frame_decord
 from univa.utils.query_llm import refine_gen_prompt, audio_prompt_gen
 from univa.utils.image_process import download_image
 from univa.utils.wavespeed_api import (
@@ -184,6 +184,38 @@ def _extract_last_frame(video_path: str) -> Optional[str]:
         return None
 
 
+# Extensions that image-conditioned tools accept directly. Anything else (e.g. a
+# video the agent passed by mistake) is treated as a clip to extract a frame from.
+_IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".webp", ".gif", ".tiff"}
+_VIDEO_EXTS = {".mp4", ".mov", ".webm", ".avi", ".mkv", ".m4v", ".gif"}
+
+
+def _ensure_image_input(image_path: str) -> str:
+    """Return a path that is safe to send to an image-conditioned generator.
+
+    The agent sometimes passes a *video* path to image2video_gen (e.g. the user
+    attached a clip). The downstream WaveSpeed call base64-encodes the bytes and
+    hard-labels them ``data:image/jpeg``, so a video silently becomes a corrupt
+    "jpeg" and the provider rejects it. To match intent ("animate this subject"),
+    extract the first frame and use that as the conditioning image instead.
+    """
+    if not image_path:
+        return image_path
+    ext = os.path.splitext(image_path)[1].lower()
+    if ext in _IMAGE_EXTS:
+        return image_path
+    if ext in _VIDEO_EXTS or os.path.isfile(image_path):
+        # Treat unknown-but-existing inputs as possible video and try a frame.
+        try:
+            frame = save_first_frame_decord(image_path)
+            if frame:
+                logger.info(f"image input '{image_path}' is a video; using first frame '{frame}'")
+                return frame
+        except Exception as exc:
+            logger.warning(f"Could not extract a frame from '{image_path}': {exc}")
+    return image_path
+
+
 def _maybe_store_last_frame(
     svc,
     segment_id: Optional[str],
@@ -341,6 +373,9 @@ async def image2video_gen(
 
     if model == "seedance":
         api_key = _get_wavespeed_api_key()
+        # If a video (or non-image) was passed, condition on its first frame so the
+        # provider receives a real image instead of a mislabeled video blob.
+        image_path = _ensure_image_input(image_path)
         save_path = _make_save_path(prompt, ext=".mp4")
         return_dict = image_to_video_generate(api_key, prompt, image_path, save_path=save_path)
 
